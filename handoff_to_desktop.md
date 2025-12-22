@@ -64,12 +64,13 @@ import shutil
 import os
 import glob
 
-# CONFIGURE THESE PATHS
-# Map the Laptop share to Z: or use UNC path
-SOURCE_DIR = r"Z:\shared_checkpoints" 
-# OR: r"\\<LAPTOP_TAILSCALE_IP>\shared_checkpoints"
+# CONFIGURE THESE PATHS FOR WSL
+# If you mapped the Laptop share to Z: in Windows, WSL sees it at /mnt/z
+SOURCE_DIR = "/mnt/z/shared_checkpoints" 
+# OR use direct path if you mounted it differently
 
-DEST_DIR = r"C:\Users\User\Projects\CV_Distributed\shared_checkpoints"
+DEST_DIR = "/home/YOUR_USERNAME/CV_Distributed/shared_checkpoints"
+# ^^^ CHANGE 'YOUR_USERNAME' to your actual Linux/WSL username!
 
 processed = set()
 
