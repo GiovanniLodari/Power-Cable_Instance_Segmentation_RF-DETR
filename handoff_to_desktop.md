@@ -52,4 +52,49 @@ python src/experiments/point_rend/ultra_safe_inference.py --weights shared_check
 ```bash
 python src/experiments/point_rend/safe_inference_smart_crop.py --weights shared_checkpoints/model_LATEST.pth
 ```
+
+## 4. Automation: The "Conveyor Belt" Script
+
+If you want the checkpoints to arrive automatically (without you manually checking), run this script on the **Desktop**:
+
+```python
+# monitor_sync.py on Desktop
+import time
+import shutil
+import os
+import glob
+
+# CONFIGURE THESE PATHS
+# Map the Laptop share to Z: or use UNC path
+SOURCE_DIR = r"Z:\shared_checkpoints" 
+# OR: r"\\<LAPTOP_TAILSCALE_IP>\shared_checkpoints"
+
+DEST_DIR = r"C:\Users\User\Projects\CV_Distributed\shared_checkpoints"
+
+processed = set()
+
+print(f"👀 Watching {SOURCE_DIR} for new models...")
+
+while True:
+    try:
+        # List all .pth files
+        files = glob.glob(os.path.join(SOURCE_DIR, "*.pth"))
+        
+        for f in files:
+            fname = os.path.basename(f)
+            if fname not in processed:
+                dest_path = os.path.join(DEST_DIR, fname)
+                
+                # Check if it exists locally
+                if not os.path.exists(dest_path):
+                    print(f"📥 New Checkpoint found: {fname}. Downloading...")
+                    shutil.copy2(f, dest_path)
+                    print("✅ Download Complete.")
+                
+                processed.add(fname)
+        
+        time.sleep(60) # Check every minute
+    except Exception as e:
+        print(f"Error: {e}")
+        time.sleep(60)
 ```
