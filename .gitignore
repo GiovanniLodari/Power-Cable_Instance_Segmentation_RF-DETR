@@ -1,0 +1,42 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+venv/
+wsl_venv/
+.gemini/
+
+# IDE
+.vscode/
+.idea/
+
+# Models and Weights (Too large for Git)
+*.pth
+*.pkl
+*.pt
+models/
+output/
+experiments/train_4K/*.pth
+experiments/train_4K/round2/
+shared_checkpoints/
+experiments/yolo_v8/
+runs/
+experiments/unet_v*/output/
+
+# Logs & Predictions
+*.tfevents.*
+debug_viz/
+predictions_*.json
+temp_preds/
+
+# Datasets
+data/
+datasets/
+
+# Logs
+logs/
+*.log
+metrics.json

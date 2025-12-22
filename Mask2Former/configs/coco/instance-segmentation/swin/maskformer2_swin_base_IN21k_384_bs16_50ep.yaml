@@ -1,0 +1,17 @@
+_BASE_: ../maskformer2_R50_bs16_50ep.yaml # <--- Configurazione base del ResNet-50 (50 epoche)
+MODEL:
+  BACKBONE:
+    NAME: "D2SwinTransformer" # Usiamo Swin Transformer al posto del ResNet
+  SWIN:
+    EMBED_DIM: 128
+    DEPTHS: [2, 2, 18, 2] # Profondità dei blocchi Swin (architettura Base)
+    NUM_HEADS: [4, 8, 16, 32]
+    WINDOW_SIZE: 12 # Dimensione della finestra per l'attenzione
+    APE: False # Absolute Position Embedding disattivato (si usa RPE)
+    DROP_PATH_RATE: 0.3 # Dropout path rate per la regolarizzazione
+    PATCH_NORM: True
+    PRETRAIN_IMG_SIZE: 384
+  # Rimuoviamo la sezione RESNETS obsoleta che causava l'errore Key Error
+  WEIGHTS: "swin_base_patch4_window12_384_22k.pkl" # Percorso al checkpoint pre-addestrato (22k = ImageNet-22K)
+  PIXEL_MEAN: [123.675, 116.280, 103.530]
+  PIXEL_STD: [58.395, 57.120, 57.375]

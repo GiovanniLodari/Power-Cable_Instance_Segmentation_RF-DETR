@@ -1,0 +1,27 @@
+# PyTorch e torchvision
+torch
+
+torchvision>=0.22.1
+
+# Gestione immagini
+Pillow
+
+# COCO API per gestione annotations
+pycocotools>=2.0.6
+
+# Elaborazione dati
+numpy
+# Utilità
+tqdm
+# Opzionale ma consigliato per visualizzazione
+matplotlib
+seaborn
+
+# Per data augmentation (opzionale ma utile)
+albumentations
+
+# Per gestione dei path
+pathlib2>=2.3.7
+
+#stampa
+tabulate

@@ -1,0 +1,55 @@
+_BASE_: Base-COCO-InstanceSegmentation.yaml # Indica che questo file eredita tutte le configurazioni base dal file 'Base-COCO-InstanceSegmentation.yaml' (incluso il ResNet backbone e i setting generali).
+
+MODEL:
+  # --- Architettura Principale ---
+  META_ARCHITECTURE: "MaskFormer" # Specifica il meta-modello da utilizzare (MaskFormer/Mask2Former).
+  
+  # --- Sezione HEAD per la Segmentazione Semantica (Segmentazione per Pixel) ---
+  SEM_SEG_HEAD:
+    NAME: "MaskFormerHead" # Nome della testa (testa di segmentazione per la fase iniziale).
+    IGNORE_VALUE: 255 # Valore nei ground truth da ignorare (tipico per i bordi o aree non etichettate).
+    NUM_CLASSES: 80 # Numero di classi da predire (80, standard per COCO, ma dovrai cambiarlo a 1 per i cavi).
+    LOSS_WEIGHT: 1.0 # Peso della funzione di perdita per la segmentazione semantica.
+    CONVS_DIM: 256 # Dimensione dei canali di output dalle convoluzioni.
+    MASK_DIM: 256 # Dimensione dei canali utilizzati per le feature delle mask finali.
+    NORM: "GN" # Tipo di normalizzazione (Group Normalization).
+    
+    # --- Pixel Decoder (Estrattore di Feature Multi-Scala) ---
+    PIXEL_DECODER_NAME: "MSDeformAttnPixelDecoder" # Utilizza il Multi-Scale Deformable Attention Pixel Decoder (essenziale in Mask2Former).
+    IN_FEATURES: ["res2", "res3", "res4", "res5"] # Livelli del backbone (ResNet) da cui estrarre le feature (multi-scala).
+    DEFORMABLE_TRANSFORMER_ENCODER_IN_FEATURES: ["res3", "res4", "res5"] # Livelli utilizzati dall'encoder Deformable Transformer.
+    COMMON_STRIDE: 4 # La risoluzione più piccola comune (es. immagine/4) per allineare i livelli di feature.
+    TRANSFORMER_ENC_LAYERS: 6 # Numero di strati di encoder Transformer nel Pixel Decoder (per integrare feature).
+    
+  # --- Sezione Decoder Transformer (Mask Queries) ---
+  MASK_FORMER:
+    TRANSFORMER_DECODER_NAME: "MultiScaleMaskedTransformerDecoder" # Decoder basato su Transformer.
+    TRANSFORMER_IN_FEATURE: "multi_scale_pixel_decoder" # L'input viene dal Pixel Decoder multi-scala.
+    DEEP_SUPERVISION: True # Utilizza l'apprendimento ausiliario per i layer intermedi del decoder (migliora la convergenza).
+    NO_OBJECT_WEIGHT: 0.1 # Peso dato alla perdita per le query che non trovano nessun oggetto.
+    CLASS_WEIGHT: 2.0 # Peso della perdita di classificazione (che predice la classe della mask query).
+    MASK_WEIGHT: 5.0 # Peso della perdita sulla mask binaria (BCE).
+    DICE_WEIGHT: 5.0 # Peso della perdita Dice (migliora l'allineamento dei bordi).
+    HIDDEN_DIM: 256 # Dimensione delle feature utilizzate nei decoder.
+    NUM_OBJECT_QUERIES: 100 # Numero di "query" o slot di oggetti che il modello proverà a trovare per ogni immagine.
+    NHEADS: 8 # Numero di head per l'attenzione nel decoder.
+    DROPOUT: 0.0 # Dropout rate nel decoder.
+    DIM_FEEDFORWARD: 2048 # Dimensione della rete feed-forward interna al decoder.
+    ENC_LAYERS: 0 # Poiché Swin/ResNet agisce come encoder, il decoder Transformer non usa un suo encoder interno.
+    PRE_NORM: False
+    ENFORCE_INPUT_PROJ: False
+    SIZE_DIVISIBILITY: 32 # L'input deve essere divisibile per 32 (utile per la dimensione delle feature map).
+    DEC_LAYERS: 10 # Numero di strati di decoder Transformer (9 strati reali + 1 per la perdita sulla query apprendibile).
+    
+    # --- Configurazione dei Punti (per un training più efficiente, non per pixel) ---
+    TRAIN_NUM_POINTS: 12544 # Numero di punti campionati per il training delle mask (anziché usare tutti i pixel).
+    OVERSAMPLE_RATIO: 3.0 # Ratio per sovra-campionare punti vicino ai bordi.
+    IMPORTANCE_SAMPLE_RATIO: 0.75 # Ratio per il campionamento di punti importanti.
+    
+    # --- Configurazione di Test ---
+    TEST:
+      SEMANTIC_ON: False # Disattiva l'output semantico.
+      INSTANCE_ON: True # Attiva l'output di Instance Segmentation (è il tuo obiettivo).
+      PANOPTIC_ON: False # Disattiva l'output Panoptic.
+      OVERLAP_THRESHOLD: 0.8 # Soglia di IOU per la rimozione di mask sovrapposte.
+      OBJECT_MASK_THRESHOLD: 0.8 # Soglia di confidenza per accettare una mask (NMS).
