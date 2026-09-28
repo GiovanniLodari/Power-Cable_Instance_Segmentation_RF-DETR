@@ -1,0 +1,9 @@
+rfdetr
+supervision
+torch
+opencv-python
+pycocotools
+scikit-image
+pandas
+numpy
+tqdm
